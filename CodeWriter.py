@@ -6,7 +6,8 @@ TEMP_MEM = 5
 MEMORY = {'local': 'LCL',
           'argument': 'ARG',
           'this': 'THIS',
-          'that': 'THAT'}
+          'that': 'THAT',
+    }
 
 #
 USING_FALSE_ACTION = ['eq', 'gt', 'lt']
@@ -154,6 +155,10 @@ class CodeWriter:
                     'D=M' + END_LINE +
                     '@' + str(index) + END_LINE +
                     'A=D+A')
+
+        elif segment == 'base':
+            return index
+
         elif segment == 'constant':
             return str(index)
         elif segment == 'static':
@@ -237,7 +242,22 @@ class CodeWriter:
         :param num_args: number of arguments the func accepts
 
         """
-        pass
+        # Save state of calling function f
+        return_address = self.func_specification(function_name, self.cur_label)
+        # need to push return address somehow
+        # self.writePushPop(Command.C_PUSH, MEMORY['base'], MEMORY['local'])
+        self.writePushPop(Command.C_PUSH, MEMORY['base'],   MEMORY['local'])
+        self.writePushPop(Command.C_PUSH, MEMORY['base'],   MEMORY['argument'])
+        self.writePushPop(Command.C_PUSH, MEMORY['base'],   MEMORY['this'])
+        self.writePushPop(Command.C_PUSH, MEMORY['base'],   MEMORY['that'])
+
+        # Reposition segments for called function g
+        # reposition ARG to SP - num_args - 5
+        # reposition LCL to SP
+
+        # Is the function name enough for the goto function? does it need to
+        # be formatted somehow?
+        self.writeGoto(function_name)
 
     def writeReturn(self):
         """
