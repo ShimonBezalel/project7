@@ -217,14 +217,14 @@ class CodeWriter:
             self.wrap_label(unique_label) + END_LINE
         )
 
-    def writeGoto(self, label):
+    def writeGoto(self, label, function=False):
         """
         Write the assembly code that is the translation of the goto command
         :param label: a string representing the label
 
         """
         # Generate agreed upon unique label
-        unique_label = self.pad_label(label)
+        unique_label = self.pad_label(label=label, function=function)
 
         # Write goto
         self.asm_file.write(
@@ -328,10 +328,12 @@ class CodeWriter:
         """
         return "(" + label_name + ")"
 
-    def pad_label(self, label):
+    def pad_label(self, label="", function=True):
         """
 
         :param label:
         :return:
         """
+        if function:
+            return self.vm_file + "." + self.cur_func
         return self.vm_file + "." + self.cur_func + "$" + label
