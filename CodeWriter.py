@@ -2,19 +2,24 @@ from Parser import *
 
 END_LINE = '\n'
 TEMP_MEM = 5
+
 MEMORY = {'local': 'LCL',
           'argument': 'ARG',
           'this': 'THIS',
           'that': 'THAT'}
 
+#
 USING_FALSE_ACTION = ['eq', 'gt', 'lt']
 
+#
 D_ARG1_M_ARG2 = ('@SP' + END_LINE +
                  'M=M-1' + END_LINE +
                  'A=M' + END_LINE +
                  'D=M' + END_LINE +
                  '@SP' + END_LINE +
                  'A=M-1' + END_LINE)
+
+#
 FALSE_ACTION = ('(FALSE)' + END_LINE +
                 '@SP' + END_LINE +
                 'A=M-1' + END_LINE +
@@ -22,9 +27,13 @@ FALSE_ACTION = ('(FALSE)' + END_LINE +
                 '@currLine' + END_LINE +
                 'A=M' + END_LINE +
                 '0;JMP' + END_LINE)
+
+#
 COMEBACK_LINE = ('D=A' + END_LINE +
                  '@currLine' + END_LINE +
                  'M=D' + END_LINE)
+
+#
 ARITHMETIC_C = {'add': (D_ARG1_M_ARG2 +
                         'M=M+D' + END_LINE),
                 'sub': (D_ARG1_M_ARG2 +
@@ -39,6 +48,8 @@ ARITHMETIC_C = {'add': (D_ARG1_M_ARG2 +
                 'not': ('@SP' + END_LINE +
                         'A=M-1' + END_LINE +
                         'M=!M' + END_LINE)}
+
+#
 JUMP_C = {'eq': 'D;JNE',
           'gt': 'D;JLE',
           'lt': 'D;JGE'}
@@ -57,6 +68,7 @@ class CodeWriter:
         """
         self.asm_file = open(file, 'w')
         self.num_LTR = 0
+        self.writeInit()
 
     def setFileName(self, file):
         """
@@ -88,8 +100,8 @@ class CodeWriter:
 
     def writePushPop(self, command, segment, index):
         """
-        Writes the assembly code that is the translation of the given command, where command is
-        either C_PUSH or C_POP.
+        Writes the assembly code that is the translation of the given command,
+        where command is either C_PUSH or C_POP.
         :param command: its C_PUSH or C_POP type command.
         :param segment: the memory segment name.
         :param index: the index in the given segment.
@@ -104,6 +116,7 @@ class CodeWriter:
                 'M=D' + END_LINE +
                 '@SP' + END_LINE +
                 'M=M+1' + END_LINE)
+
         elif command == Command.C_POP and segment != 'constant':
             if segment in MEMORY:
                 self.asm_file.write(
@@ -164,7 +177,6 @@ class CodeWriter:
         self.asm_file.write('(END)' + END_LINE)
         self.asm_file.close()
 
-
     def writeInit(self):
         """
         Write the assembly code tht effects the VM init, also called the
@@ -178,8 +190,8 @@ class CodeWriter:
             "@SP" + END_LINE +
             "M=D" + END_LINE
         )
+        # Call Sys.init and Main.main within
         self.writeCall("Sys.init", 0)
-
 
     def writeLabel(self, label):
         """
@@ -187,8 +199,10 @@ class CodeWriter:
         :param label: a string representing the label
 
         """
-        pass
-
+        # Write a label deceleration
+        self.asm_file.write(
+            self.wrap_label(label) + END_LINE
+        )
 
     def writeGoto(self, label):
         """
@@ -196,8 +210,11 @@ class CodeWriter:
         :param label: a string representing the label
 
         """
-        pass
-
+        # Write goto
+        self.asm_file.write(
+            "@" + label + END_LINE +
+            "0;JMP" + END_LINE
+        )
 
     def writeIf(self, label):
         """
@@ -205,10 +222,15 @@ class CodeWriter:
         :param label: a string representing the label
 
         """
-        pass
+        # Write conditional goto, the condition sit on stack (local?)
+        self.asm_file.write(
+            "@SP" + END_LINE +
+            "D=M" + END_LINE +
+            "@" + label + END_LINE +
+            "D;JGT" + END_LINE  # Does this need to be a different command?
+        )
 
-
-    def writeCall(self,function_name, num_args):
+    def writeCall(self, function_name, num_args):
         """
         Write the assembly code that is the translation of the call command
         :param function_name: string representing the name of the function
@@ -216,7 +238,6 @@ class CodeWriter:
 
         """
         pass
-
 
     def writeReturn(self):
         """
@@ -233,7 +254,19 @@ class CodeWriter:
         :param num_args: number of arguments the func accepts
 
         """
-        pass
+        address = 0
+        # Write function deceleration asm code
+        self.asm_file.write(
+            # do we need to save a state here?
+            # Designate memory?
+
+            # write function name as unique label
+            ""
+        )
+        # Generate n pushes into the ARG segment
+        for i in range(num_args):
+            self.writePushPop(Command.C_PUSH, segment=MEMORY['argument'],
+                              index=address + i)
 
     @staticmethod
     def func_specification(function_name, label):
@@ -249,10 +282,10 @@ class CodeWriter:
         return function_name + "$" + label
 
     @staticmethod
-    def func_label(function_name):
+    def wrap_label(label_name):
         """
         Wraps f in (f) generating a suggestion to asm to save code segment as f
-        :param function_name:
+        :param label_name:
         :return:
         """
-        return "(" + function_name + ")"
+        return "(" + label_name + ")"
