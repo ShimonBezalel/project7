@@ -7,7 +7,7 @@ MEMORY = {'local': 'LCL',
           'argument': 'ARG',
           'this': 'THIS',
           'that': 'THAT',
-    }
+          }
 
 #
 USING_FALSE_ACTION = ['eq', 'gt', 'lt']
@@ -205,8 +205,9 @@ class CodeWriter:
 
         """
         # Write a label deceleration
+        unique_label = self.cur_func + "$" + label
         self.asm_file.write(
-            self.wrap_label(label) + END_LINE
+            self.wrap_label(unique_label) + END_LINE
         )
 
     def writeGoto(self, label):
