@@ -246,10 +246,10 @@ class CodeWriter:
         return_address = self.func_specification(function_name, self.cur_label)
         # need to push return address somehow
         # self.writePushPop(Command.C_PUSH, MEMORY['base'], MEMORY['local'])
-        self.writePushPop(Command.C_PUSH, MEMORY['base'],   MEMORY['local'])
-        self.writePushPop(Command.C_PUSH, MEMORY['base'],   MEMORY['argument'])
-        self.writePushPop(Command.C_PUSH, MEMORY['base'],   MEMORY['this'])
-        self.writePushPop(Command.C_PUSH, MEMORY['base'],   MEMORY['that'])
+        self.writePushPop(Command.C_PUSH,   MEMORY['base'],   MEMORY['local'])
+        self.writePushPop(Command.C_PUSH,   MEMORY['base'],   MEMORY['argument'])
+        self.writePushPop(Command.C_PUSH,   MEMORY['base'],   MEMORY['this'])
+        self.writePushPop(Command.C_PUSH,   MEMORY['base'],   MEMORY['that'])
 
         # Reposition segments for called function g
         # reposition ARG to SP - num_args - 5
