@@ -69,6 +69,7 @@ class CodeWriter:
         """
         self.asm_file = open(file, 'w')
         self.num_LTR = 0
+        self.num_RA = 0
         self.writeInit()
 
         # Some initialization of function name. this may be extra
@@ -133,8 +134,6 @@ class CodeWriter:
                     'M=D' + END_LINE +
                     '@SP' + END_LINE +
                     'AM=M-1' + END_LINE +
-                    # 'M=M-1' + END_LINE +
-                    # 'A=M' + END_LINE +
                     'D=M' + END_LINE +
                     '@R13' + END_LINE +
                     'A=M' + END_LINE +
@@ -146,8 +145,7 @@ class CodeWriter:
                                     # 'M=M-1' + END_LINE +
                                     # 'A=M' + END_LINE +
                                     'D=M' + END_LINE +
-                                    '@' + self.findMemory(segment,
-                                                          index) + END_LINE +
+                                    '@' + self.findMemory(segment, index) + END_LINE +
                                     'M=D' + END_LINE)
 
     def findMemory(self, segment, index):
@@ -263,14 +261,16 @@ class CodeWriter:
         # return_address = self.func_specification(function_name, self.cur_label)
         # need to push return address somehow
         # self.writePushPop(Command.C_PUSH, MEMORY['base'], MEMORY['local'])
+
+        # pushing all the current values of the method to the stack
+        return_adress = "returnAddress_" + str(self.num_RA)
+        self.writePushPop(Command.C_PUSH, MEMORY['base'], return_adress)
         self.writePushPop(Command.C_PUSH,   MEMORY['base'],   MEMORY['local'])
         self.writePushPop(Command.C_PUSH,   MEMORY['base'],   MEMORY['argument'])
         self.writePushPop(Command.C_PUSH,   MEMORY['base'],   MEMORY['this'])
         self.writePushPop(Command.C_PUSH,   MEMORY['base'],   MEMORY['that'])
 
-        # Reposition segments for called function g
-        # reposition ARG to SP - num_args - 5
-        # reposition LCL to SP
+        # reposition LCL to SP, ARG to SP - num_args - 5
         self.asm_file.write('@SP' + END_LINE +
                             'D=M' + END_LINE +
                             '@LCL' + END_LINE +
@@ -281,10 +281,10 @@ class CodeWriter:
                             'D=D-A' + END_LINE +
                             '@ARG' + END_LINE +
                             'M=D' + END_LINE)
-        # Is the function name enough for the goto function? does it need to
-        # be formatted somehow?
+
         self.writeGoto(function_name, True)
-        self.asm_file.write(self.wrap_label("")) # return adress
+        self.asm_file.write(self.wrap_label(return_adress))
+        self.num_RA += 1
 
 
     def writeReturn(self):
@@ -292,7 +292,41 @@ class CodeWriter:
         Write the assembly code that is the translation of the return command
 
         """
-        pass
+        self.asm_file.write('@LCL' + END_LINE + # frame = LCL
+                            'D=M' + END_LINE +
+                            '@frame' + END_LINE +
+                            'M=D' + END_LINE +
+                            '@5' + END_LINE + # retAddr = *(frame-5)
+                            'A=D-A' + END_LINE +
+                            'D=M' + END_LINE +
+                            '@retAddr' + END_LINE +
+                            'M=D' + END_LINE
+                            # '@SP' + END_LINE + # *ARG = pop
+                            # 'AM=M-1' + END_LINE +
+                            # 'D=M' + END_LINE +
+                            # '@ARG' + END_LINE +
+                            # 'A=M' + END_LINE +
+                            # 'M=D' + END_LINE)
+                            )
+        self.writePushPop(Command.C_POP, MEMORY['argument'], 0) # *ARG = pop
+        self.asm_file.write('@ARG' + END_LINE +  # SP = ARG + 1
+                            'D=M+1' + END_LINE +
+                            '@SP' + END_LINE +
+                            'M=D' + END_LINE)
+
+        # restores the caller's THAT, THIS, ARG, LCL
+        for seg in ['THAT', 'THIS', 'ARG', 'LCL']: # make sure it works correctly
+            self.fromFrameToVal(seg)
+
+        self.writeGoto('retAddr')
+
+    def fromFrameToVal(self, val):
+        self.asm_file.write('@frame' + END_LINE +
+                            'AM=M-1' + END_LINE +
+                            'D=M' + END_LINE +
+                            '@' + val + END_LINE +
+                            'M=D' + END_LINE)
+
 
     def writeFunction(self, function_name, num_args):
         """
