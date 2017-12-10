@@ -16,12 +16,12 @@ class Command(Enum):
     C_ARITHMETIC = ""
     C_PUSH = "push"
     C_POP = "pop"
-    C_LABEL = "()"
-    C_GOTO = ""
-    C_IF = ""
+    C_LABEL = "label"
+    C_GOTO = "goto"
+    C_IF = "if-goto"
     C_FUNCTION = ""
     C_RETURN = "return"
-    C_CALL = ""
+    C_CALL = "call"
     UNKNOWN = "error"
 
 
@@ -72,7 +72,7 @@ class Parser:
         # self.count = -1
         # self.number_line = 0
 
-        # Initilize an iterator of the list
+        # Initialize an iterator of the list
         self.lines_iter = iter(self.lines)
         self.first_arg = None
         self.second_arg = None
