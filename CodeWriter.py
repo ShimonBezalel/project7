@@ -77,7 +77,8 @@ class CodeWriter:
     def setFileName(self, file):
         """
         Sets the name of the current file the object is translating from.
-        :param file: a string that represents a file name without the suffix after the dot.
+        :param file: a string that represents a file name without the suffix
+        after the dot.
         """
         self.vm_file = file
 
@@ -87,11 +88,13 @@ class CodeWriter:
         :param command: the arithmetic command that will be executed on the stack.
         """
         if command in USING_FALSE_ACTION:
+
             self.asm_file.write('@LTR_' + str(self.num_LTR) + END_LINE +
                                 COMEBACK_LINE +
                                 D_ARG1_M_ARG2 +
                                 'D=M-D' + END_LINE +
                                 '@FALSE' + END_LINE)
+
             self.asm_file.write(JUMP_C[command] + END_LINE +
                                 '@SP' + END_LINE +
                                 'A=M-1' + END_LINE +
@@ -136,6 +139,7 @@ class CodeWriter:
                     '@R13' + END_LINE +
                     'A=M' + END_LINE +
                     'M=D' + END_LINE)
+
             else:
                 self.asm_file.write('@SP' + END_LINE +
                                     'AM=M-1' + END_LINE +
@@ -219,10 +223,12 @@ class CodeWriter:
         :param label: a string representing the label
 
         """
+        # Generate agreed upon unique label
         unique_label = self.pad_label(label)
+
         # Write goto
         self.asm_file.write(
-            "@" + label + END_LINE +
+            "@" + unique_label + END_LINE +
             "0;JMP" + END_LINE
         )
 
@@ -232,13 +238,18 @@ class CodeWriter:
         :param label: a string representing the label
 
         """
+        # Generate agreed upon unique label
+        unique_label = self.pad_label(label)
 
         # Write conditional goto, the condition sit on stack (local?)
         self.asm_file.write(
             "@SP" + END_LINE +
+            "AM=M-1" + END_LINE +
             "D=M" + END_LINE +
-            "@" + label + END_LINE +
-            "D;JGT" + END_LINE  # Does this need to be a different command?
+            # "D=M" + END_LINE +
+            "@" + unique_label + END_LINE +
+            "D;JLT" + END_LINE  # If True (-1) then it is less than 0 and
+            # must jump
         )
 
     def writeCall(self, function_name, num_args):
