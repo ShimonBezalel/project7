@@ -249,7 +249,7 @@ class CodeWriter:
 
         """
         # Save state of calling function f
-        return_address = self.func_specification(function_name, self.cur_label)
+        # return_address = self.func_specification(function_name, self.cur_label)
         # need to push return address somehow
         # self.writePushPop(Command.C_PUSH, MEMORY['base'], MEMORY['local'])
         self.writePushPop(Command.C_PUSH,   MEMORY['base'],   MEMORY['local'])
@@ -260,10 +260,21 @@ class CodeWriter:
         # Reposition segments for called function g
         # reposition ARG to SP - num_args - 5
         # reposition LCL to SP
-
+        self.asm_file.write('@SP' + END_LINE +
+                            'D=M' + END_LINE +
+                            '@LCL' + END_LINE +
+                            'M=D' + END_LINE +
+                            '@5' + END_LINE +
+                            'D=D-A' + END_LINE +
+                            '@' + str(num_args) + END_LINE +
+                            'D=D-A' + END_LINE +
+                            '@ARG' + END_LINE +
+                            'M=D' + END_LINE)
         # Is the function name enough for the goto function? does it need to
         # be formatted somehow?
-        self.writeGoto(function_name)
+        self.writeGoto(function_name, True)
+        self.asm_file.write(self.wrap_label("")) # return adress
+
 
     def writeReturn(self):
         """
@@ -281,19 +292,25 @@ class CodeWriter:
 
         """
         self.cur_func = function_name
-        address = 0
-        # Write function deceleration asm code
-        self.asm_file.write(
-            # do we need to save a state here?
-            # Designate memory?
+        # address = 0
+        # # Write function deceleration asm code
+        # self.asm_file.write(
+        #     # do we need to save a state here?
+        #     # Designate memory?
+        #
+        #     # write function name as unique label
+        #     ""
+        # )
 
-            # write function name as unique label
-            ""
-        )
+        self.asm_file.write(self.wrap_label(self.pad_label()))
+
         # Generate n pushes into the ARG segment
         for i in range(num_args):
-            self.writePushPop(Command.C_PUSH, segment=MEMORY['argument'],
-                              index=address + i)
+            self.asm_file.write('@SP' + END_LINE +
+                                'A=M' + END_LINE +
+                                'M=0' + END_LINE +
+                                '@SP' + END_LINE +
+                                'M=M+1' + END_LINE)
 
     @staticmethod
     def func_specification(function_name, label):
