@@ -19,7 +19,7 @@ class Command(Enum):
     C_LABEL = "label"
     C_GOTO = "goto"
     C_IF = "if-goto"
-    C_FUNCTION = ""
+    C_FUNCTION = "function"
     C_RETURN = "return"
     C_CALL = "call"
     UNKNOWN = "error"
@@ -45,7 +45,7 @@ class Arithmetic(Enum):
 
 class Parser:
     """
-    Parser class. Knows to parse one file at a time.
+    Parser class.  Parse one file at a time.
 
     """
 
@@ -68,9 +68,6 @@ class Parser:
 
         self.clean_lines()
         self.len = self.lines.__len__()
-        # self.curr_line = self.EMPTY_LINE
-        # self.count = -1
-        # self.number_line = 0
 
         # Initialize an iterator of the list
         self.lines_iter = iter(self.lines)
@@ -143,10 +140,40 @@ class Parser:
             self.second_arg = None
             return Command.C_RETURN
 
-        for prefix in Arithmetic:
-            if self.cur.startswith(prefix.value):
+        if args[self.C_TYPE] == Command.C_GOTO.value:
+            self.type = Command.C_GOTO
+            self.first_arg = args[self.FIRST_ARG]
+            self.second_arg = None
+            return Command.C_GOTO
+
+        if args[self.C_TYPE] == Command.C_IF.value:
+            self.type = Command.C_IF
+            self.first_arg = args[self.FIRST_ARG]
+            self.second_arg = None
+            return Command.C_IF
+
+        if args[self.C_TYPE] == Command.C_LABEL.value:
+            self.type = Command.C_LABEL
+            self.first_arg = args[self.FIRST_ARG]
+            self.second_arg = None
+            return Command.C_LABEL
+
+        if args[self.C_TYPE] == Command.C_FUNCTION.value:
+            self.type = Command.C_FUNCTION
+            self.first_arg = args[self.FIRST_ARG]
+            self.second_arg = args[self.SECOND_ARG]
+            return Command.C_FUNCTION
+
+        if args[self.C_TYPE] == Command.C_CALL.value:
+            self.type = Command.C_CALL
+            self.first_arg = args[self.FIRST_ARG]
+            self.second_arg = args[self.SECOND_ARG]
+            return Command.C_CALL
+
+        for operand in Arithmetic:
+            if self.cur.startswith(operand.value):
                 self.type = Command.C_ARITHMETIC
-                self.first_arg = prefix.value
+                self.first_arg = operand.value
                 return Command.C_ARITHMETIC
 
         self.type = Command.UNKNOWN
@@ -162,11 +189,11 @@ class Parser:
         """
         assert self.type != Command.C_RETURN
 
-        if self.type == Command.C_ARITHMETIC or self.type == Command.C_PUSH \
-                or self.type == Command.C_POP:
-            return self.first_arg
+        # if self.type == Command.C_ARITHMETIC or self.type == Command.C_PUSH \
+        #         or self.type == Command.C_POP:
+        return self.first_arg
 
-        return Command.UNKNOWN.name
+        # return Command.UNKNOWN.name
 
     def arg2(self):
         """
