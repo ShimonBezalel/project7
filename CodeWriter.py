@@ -6,7 +6,9 @@ MEMORY = {'local': 'LCL',
           'argument': 'ARG',
           'this': 'THIS',
           'that': 'THAT'}
+
 USING_FALSE_ACTION = ['eq', 'gt', 'lt']
+
 D_ARG1_M_ARG2 = ('@SP' + END_LINE +
                  'M=M-1' + END_LINE +
                  'A=M' + END_LINE +
@@ -169,7 +171,14 @@ class CodeWriter:
         bootstrap code. This goes in the beginning of output file
 
         """
-        pass
+        # Set SP to 256
+        self.asm_file.write(
+            "@256" + END_LINE +
+            "D=A"
+            "@SP" + END_LINE +
+            "M=D" + END_LINE
+        )
+        self.writeCall("Sys.init", 0)
 
 
     def writeLabel(self, label):
