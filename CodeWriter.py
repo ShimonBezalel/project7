@@ -71,6 +71,9 @@ class CodeWriter:
         self.num_LTR = 0
         self.writeInit()
 
+        # Some initialization of function name. this may be extra
+        self.cur_func = "Main.main"
+
     def setFileName(self, file):
         """
         Sets the name of the current file the object is translating from.
@@ -216,6 +219,7 @@ class CodeWriter:
         :param label: a string representing the label
 
         """
+        unique_label = self.pad_label(label)
         # Write goto
         self.asm_file.write(
             "@" + label + END_LINE +
@@ -228,6 +232,7 @@ class CodeWriter:
         :param label: a string representing the label
 
         """
+
         # Write conditional goto, the condition sit on stack (local?)
         self.asm_file.write(
             "@SP" + END_LINE +
@@ -275,6 +280,7 @@ class CodeWriter:
         :param num_args: number of arguments the func accepts
 
         """
+        self.cur_func = function_name
         address = 0
         # Write function deceleration asm code
         self.asm_file.write(
@@ -310,3 +316,11 @@ class CodeWriter:
         :return:
         """
         return "(" + label_name + ")"
+
+    def pad_label(self, label):
+        """
+
+        :param label:
+        :return:
+        """
+        return self.vm_file + "." + self.cur_func + "$" + label
