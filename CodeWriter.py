@@ -203,7 +203,7 @@ class CodeWriter:
         self.asm_file.write('(END)' + END_LINE)
         self.asm_file.close()
 
-    def writeInit(self, multifile=True):
+    def writeInit(self):
         """
         Write the assembly code tht effects the VM init, also called the
         bootstrap code. This goes in the beginning of output file
@@ -335,7 +335,7 @@ class CodeWriter:
         for seg in ['THAT', 'THIS', 'ARG', 'LCL']: # make sure it works correctly
             self.fromFrameToVal(seg)
 
-        self.writeGoto('retAddr')
+        self.writeGoto('retAddr', function=True)
 
     def fromFrameToVal(self, val):
         self.asm_file.write('@frame' + END_LINE +
@@ -366,18 +366,6 @@ class CodeWriter:
                                 '@SP' + END_LINE +
                                 'M=M+1' + END_LINE)
 
-    # @staticmethod
-    # def func_specification(function_name, label):
-    #     """
-    #     Generates a unique function symbol for the asm code in the format:
-    #     f$b where f is the function name and b is the label symbol within VM
-    #     function code.
-    #     These full specifications must be used in goto and ifgoto usage
-    #     :param function_name:
-    #     :param label:
-    #     :return: "f$b"
-    #     """
-    #     return function_name + "$" + label
 
     @staticmethod
     def wrap_label(label_name):
