@@ -200,7 +200,7 @@ class CodeWriter:
         # Set SP to 256
         self.asm_file.write(
             "@256" + END_LINE +
-            "D=A"
+            "D=A" + END_LINE +
             "@SP" + END_LINE +
             "M=D" + END_LINE
         )
