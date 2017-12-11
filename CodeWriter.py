@@ -275,8 +275,8 @@ class CodeWriter:
         # self.writePushPop(Command.C_PUSH, MEMORY['base'], MEMORY['local'])
 
         # pushing all the current values of the method to the stack
-        return_adress = "returnAddress_" + str(self.num_RA)
-        self.writePushPop(Command.C_PUSH, MEMORY['base'], return_adress)
+        return_address = "returnAddress_" + str(self.num_RA)
+        self.writePushPop(Command.C_PUSH, MEMORY['base'], return_address)
         self.writePushPop(Command.C_PUSH,   MEMORY['base'],   MEMORY['local'])
         self.writePushPop(Command.C_PUSH,   MEMORY['base'],   MEMORY['argument'])
         self.writePushPop(Command.C_PUSH,   MEMORY['base'],   MEMORY['this'])
@@ -295,7 +295,7 @@ class CodeWriter:
                             'M=D' + END_LINE)
 
         self.writeGoto(function_name, True)
-        self.asm_file.write(self.wrap_label(return_adress) + END_LINE)
+        self.asm_file.write(self.wrap_label(return_address) + END_LINE)
         self.num_RA += 1
 
 
@@ -349,17 +349,9 @@ class CodeWriter:
 
         """
         self.cur_func = function_name
-        # address = 0
-        # # Write function deceleration asm code
-        # self.asm_file.write(
-        #     # do we need to save a state here?
-        #     # Designate memory?
-        #
-        #     # write function name as unique label
-        #     ""
-        # )
 
-        self.asm_file.write(self.wrap_label(self.pad_label()))
+
+        self.asm_file.write(self.wrap_label(self.pad_label()) + END_LINE)
 
         # Generate n pushes into the ARG segment
         for i in range(num_args):
