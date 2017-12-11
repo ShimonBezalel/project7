@@ -1,1 +1,31 @@
-# project7
+karin_sorokin, heimy4prez
+===============================================================================
+Karin Sorokin, ID 205645807, karin_sorokin@mail.huji.ac.il
+Shimon Heimowitz, ID 203631676, shimon.heimowitz@mail.huji.ac.il
+===============================================================================
+
+                          Project 8 - Virtual Machine
+                           ----------------------- 
+  			      Python Implementation
+
+Submitted Files
+---------------
+Main.py		    - Runs the main program logic of converting a .vm file to .asm
+                machine language file
+
+Parser.py	    - Designated module for parsing the content of a .vm file
+
+CodeWriter.py   - Designated module for converting vm commands to asm commands
+
+VMtranslator    - Bash program executable
+
+Makefile	    - Opens permissions
+
+Comments
+-------
+Usage: Run using the following bash command
+VMtranslator program_name.vm or path/dir/
+
+Output: A asm file:
+program_name.asm or path/dir/dir.asm
+

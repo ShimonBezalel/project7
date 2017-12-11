@@ -7,7 +7,6 @@ MEMORY = {'local': 'LCL',
           'argument': 'ARG',
           'this': 'THIS',
           'that': 'THAT',
-          # 'base': 'base'
           }
 
 #
@@ -122,7 +121,8 @@ class CodeWriter:
         :param index: the index in the given segment.
         """
         if command == Command.C_PUSH:
-            value_line = 'D=A' if segment == 'constant' else 'D=M'
+            value_line = 'D=A' if segment in ['constant', 'return_address']  \
+                else 'D=M'
             self.asm_file.write('@' + self.findMemory(segment, index) + END_LINE +
                                 value_line + END_LINE +
                                 '@SP' + END_LINE +
@@ -148,8 +148,6 @@ class CodeWriter:
             else:
                 self.asm_file.write('@SP' + END_LINE +
                                     'AM=M-1' + END_LINE +
-                                    # 'M=M-1' + END_LINE +
-                                    # 'A=M' + END_LINE +
                                     'D=M' + END_LINE +
                                     '@' + self.findMemory(segment, index) + END_LINE +
                                     'M=D' + END_LINE)
@@ -168,9 +166,11 @@ class CodeWriter:
                     '@' + str(index) + END_LINE +
                     'A=D+A')
 
-        # returns the index, usually in this case - segment 0
-        elif segment == 'base':
+        # returns the index, usually in this case - segment 0 or if we are
+        # looking to insert a variable named by a unique return address
+        elif segment in ['base', "return_address"]:
             return index
+
 
         # if the index>0 return it otherwise return -index and than make the number negative
         # by A=-A
@@ -263,7 +263,7 @@ class CodeWriter:
             "D=M" + END_LINE +
             # "D=M" + END_LINE +
             "@" + unique_label + END_LINE +
-            "D;JGT" + END_LINE  # If True (-1) then it is less than 0 and
+            "D;JNE" + END_LINE  # If True (-1) then it is less than 0 and
             # must jump
         )
 
@@ -281,7 +281,7 @@ class CodeWriter:
 
         # pushing all the current values of the method to the stack
         return_address = "returnAddress_" + str(self.num_RA)
-        self.writePushPop(Command.C_PUSH,   'base', return_address)
+        self.writePushPop(Command.C_PUSH,   'return_address', return_address)
         self.writePushPop(Command.C_PUSH,   'base',   MEMORY['local'])
         self.writePushPop(Command.C_PUSH,   'base',   MEMORY['argument'])
         self.writePushPop(Command.C_PUSH,   'base',   MEMORY['this'])
@@ -325,7 +325,7 @@ class CodeWriter:
                             # 'A=M' + END_LINE +
                             # 'M=D' + END_LINE)
                             )
-        self.writePushPop(Command.C_POP, MEMORY['argument'], 0) # *ARG = pop
+        self.writePushPop(Command.C_POP, 'argument', 0) # *ARG = pop
         self.asm_file.write('@ARG' + END_LINE +  # SP = ARG + 1
                             'D=M+1' + END_LINE +
                             '@SP' + END_LINE +
@@ -335,7 +335,10 @@ class CodeWriter:
         for seg in ['THAT', 'THIS', 'ARG', 'LCL']: # make sure it works correctly
             self.fromFrameToVal(seg)
 
-        self.writeGoto('retAddr', function=True)
+        # self.writeGoto('retAddr', function=True)
+        self.asm_file.write('@retAddr' + END_LINE +  # SP = ARG + 1
+                            'A=M' + END_LINE +
+                            '0;JMP' + END_LINE)
 
     def fromFrameToVal(self, val):
         self.asm_file.write('@frame' + END_LINE +
@@ -384,4 +387,4 @@ class CodeWriter:
         """
         if function:
             return label
-        return self.vm_file + "." + self.cur_func + "$" + label
+        return self.cur_func + "$" + label
