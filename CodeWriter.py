@@ -7,6 +7,7 @@ MEMORY = {'local': 'LCL',
           'argument': 'ARG',
           'this': 'THIS',
           'that': 'THAT',
+          'base': 'base'
           }
 
 #
@@ -70,10 +71,12 @@ class CodeWriter:
         self.asm_file = open(file, 'w')
         self.num_LTR = 0
         self.num_RA = 0
+        self.setFileName("Main")
+        self.cur_func = "main"
         self.writeInit()
 
         # Some initialization of function name. this may be extra
-        self.cur_func = "Main.main"
+
 
     def setFileName(self, file):
         """
@@ -160,19 +163,24 @@ class CodeWriter:
                     'D=M' + END_LINE +
                     '@' + str(index) + END_LINE +
                     'A=D+A')
+
         # returns the index, usually in this case - segment 0
         elif segment == 'base':
             return index
+
         # if the index>0 return it otherwise return -index and than make the number negative
         # by A=-A
         elif segment == 'constant':
             return (str(-index) + END_LINE + 'A=-A') if index < 0 else str(index)
+
         # return file_input.index
         elif segment == 'static':
             return self.vm_file + "." + str(index)
+
         # in the temp segment that starts at place 5 in the memory, so 5 added to the given index
         elif segment == 'temp':
             return str(TEMP_MEM + index)
+
         # when the segment=pointer, if 1 returns 'that' else returns 'false'
         else:
             if index:

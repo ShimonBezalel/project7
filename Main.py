@@ -56,7 +56,7 @@ def main(path):
         return
 
     try:
-        writer = CodeWriter(os.path.join(dir_path,file_name))
+        writer = CodeWriter(os.path.join(dir_path, file_name))
         for vm_file in vm_files:
             translate_file(vm_file, writer)
         writer.close()
