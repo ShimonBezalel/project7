@@ -7,7 +7,7 @@ MEMORY = {'local': 'LCL',
           'argument': 'ARG',
           'this': 'THIS',
           'that': 'THAT',
-          'base': 'base'
+          # 'base': 'base'
           }
 
 #
@@ -63,7 +63,7 @@ class CodeWriter:
      translates the command to assembler, and write it to the output file.
     """
 
-    def __init__(self, file):
+    def __init__(self, file, multifile=False):
         """
         Initialize a CodeWriter object.
         :param file: the file the object will write the translation to.
@@ -71,9 +71,13 @@ class CodeWriter:
         self.asm_file = open(file, 'w')
         self.num_LTR = 0
         self.num_RA = 0
-        self.setFileName("Main")
-        self.cur_func = "main"
-        self.writeInit()
+        if multifile:
+            self.setFileName("Sys")
+            self.cur_func = "init"
+            self.writeInit()
+        else:
+            self.setFileName("")
+            self.cur_func = ""
 
         # Some initialization of function name. this may be extra
 
@@ -199,7 +203,7 @@ class CodeWriter:
         self.asm_file.write('(END)' + END_LINE)
         self.asm_file.close()
 
-    def writeInit(self):
+    def writeInit(self, multifile=True):
         """
         Write the assembly code tht effects the VM init, also called the
         bootstrap code. This goes in the beginning of output file
@@ -212,6 +216,7 @@ class CodeWriter:
             "@SP" + END_LINE +
             "M=D" + END_LINE
         )
+
         # Call Sys.init and Main.main within
         self.writeCall("Sys.init", 0)
 
@@ -258,7 +263,7 @@ class CodeWriter:
             "D=M" + END_LINE +
             # "D=M" + END_LINE +
             "@" + unique_label + END_LINE +
-            "D;JLT" + END_LINE  # If True (-1) then it is less than 0 and
+            "D;JGT" + END_LINE  # If True (-1) then it is less than 0 and
             # must jump
         )
 
@@ -276,11 +281,11 @@ class CodeWriter:
 
         # pushing all the current values of the method to the stack
         return_address = "returnAddress_" + str(self.num_RA)
-        self.writePushPop(Command.C_PUSH, MEMORY['base'], return_address)
-        self.writePushPop(Command.C_PUSH,   MEMORY['base'],   MEMORY['local'])
-        self.writePushPop(Command.C_PUSH,   MEMORY['base'],   MEMORY['argument'])
-        self.writePushPop(Command.C_PUSH,   MEMORY['base'],   MEMORY['this'])
-        self.writePushPop(Command.C_PUSH,   MEMORY['base'],   MEMORY['that'])
+        self.writePushPop(Command.C_PUSH,   'base', return_address)
+        self.writePushPop(Command.C_PUSH,   'base',   MEMORY['local'])
+        self.writePushPop(Command.C_PUSH,   'base',   MEMORY['argument'])
+        self.writePushPop(Command.C_PUSH,   'base',   MEMORY['this'])
+        self.writePushPop(Command.C_PUSH,   'base',   MEMORY['that'])
 
         # reposition LCL to SP, ARG to SP - num_args - 5
         self.asm_file.write('@SP' + END_LINE +
@@ -351,7 +356,7 @@ class CodeWriter:
         self.cur_func = function_name
 
 
-        self.asm_file.write(self.wrap_label(self.pad_label()) + END_LINE)
+        self.asm_file.write(self.wrap_label(function_name) + END_LINE)
 
         # Generate n pushes into the ARG segment
         for i in range(num_args):
@@ -383,12 +388,12 @@ class CodeWriter:
         """
         return "(" + label_name + ")"
 
-    def pad_label(self, label="", function=True):
+    def pad_label(self, label, function=False):
         """
 
         :param label:
         :return:
         """
         if function:
-            return self.vm_file + "." + self.cur_func
+            return label
         return self.vm_file + "." + self.cur_func + "$" + label

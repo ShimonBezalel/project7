@@ -56,7 +56,10 @@ def main(path):
         return
 
     try:
-        writer = CodeWriter(os.path.join(dir_path, file_name))
+        # Initilizes write based, using a condition for multiple file reading.
+        # Multiple files have a special initlization
+        writer = CodeWriter(os.path.join(dir_path, file_name),
+                            len(vm_files) > 1)
         for vm_file in vm_files:
             translate_file(vm_file, writer)
         writer.close()
