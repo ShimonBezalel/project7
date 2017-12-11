@@ -221,8 +221,8 @@ class CodeWriter:
         :param label: a string representing the label
 
         """
-        # Write a label deceleration
-        unique_label = self.cur_func + "$" + label
+        # Write a label deceleration, using agreed upon unique label
+        unique_label = self.pad_label(label=label, function=False)
         self.asm_file.write(
             self.wrap_label(unique_label) + END_LINE
         )
@@ -249,7 +249,7 @@ class CodeWriter:
 
         """
         # Generate agreed upon unique label
-        unique_label = self.pad_label(label)
+        unique_label = self.pad_label(label=label, function=False)
 
         # Write conditional goto, the condition sit on stack (local?)
         self.asm_file.write(
@@ -295,7 +295,7 @@ class CodeWriter:
                             'M=D' + END_LINE)
 
         self.writeGoto(function_name, True)
-        self.asm_file.write(self.wrap_label(return_adress))
+        self.asm_file.write(self.wrap_label(return_adress) + END_LINE)
         self.num_RA += 1
 
 
@@ -369,18 +369,18 @@ class CodeWriter:
                                 '@SP' + END_LINE +
                                 'M=M+1' + END_LINE)
 
-    @staticmethod
-    def func_specification(function_name, label):
-        """
-        Generates a unique function symbol for the asm code in the format:
-        f$b where f is the function name and b is the label symbol within VM
-        function code.
-        These full specifications must be used in goto and ifgoto usage
-        :param function_name:
-        :param label:
-        :return: "f$b"
-        """
-        return function_name + "$" + label
+    # @staticmethod
+    # def func_specification(function_name, label):
+    #     """
+    #     Generates a unique function symbol for the asm code in the format:
+    #     f$b where f is the function name and b is the label symbol within VM
+    #     function code.
+    #     These full specifications must be used in goto and ifgoto usage
+    #     :param function_name:
+    #     :param label:
+    #     :return: "f$b"
+    #     """
+    #     return function_name + "$" + label
 
     @staticmethod
     def wrap_label(label_name):

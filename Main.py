@@ -98,6 +98,23 @@ def translate_file(path, writer):
         if parser.commandType() in (Command.C_PUSH, Command.C_POP):
             writer.writePushPop(parser.commandType(),
                                 parser.arg1(), parser.arg2())
+        if parser.commandType() == Command.C_LABEL:
+            writer.writeLabel(parser.arg1())
+
+        if parser.commandType() == Command.C_GOTO:
+            writer.writeGoto(parser.arg1())
+
+        if parser.commandType() == Command.C_IF:
+            writer.writeIf(parser.arg1())
+
+        if parser.commandType() == Command.C_RETURN:
+            writer.writeReturn()
+
+        if parser.commandType() == Command.C_CALL:
+            writer.writeCall(parser.arg1(), parser.arg2())
+
+        if parser.commandType() == Command.C_FUNCTION:
+            writer.writeFunction(parser.arg1(), parser.arg2())
 
 
 if __name__ == "__main__":
