@@ -116,14 +116,13 @@ class CodeWriter:
         """
         if command == Command.C_PUSH:
             value_line = 'D=A' if segment == 'constant' else 'D=M'
-            self.asm_file.write(
-                '@' + self.findMemory(segment, index) + END_LINE +
-                value_line + END_LINE +
-                '@SP' + END_LINE +
-                'A=M' + END_LINE +
-                'M=D' + END_LINE +
-                '@SP' + END_LINE +
-                'M=M+1' + END_LINE)
+            self.asm_file.write('@' + self.findMemory(segment, index) + END_LINE +
+                                value_line + END_LINE +
+                                '@SP' + END_LINE +
+                                'A=M' + END_LINE +
+                                'M=D' + END_LINE +
+                                '@SP' + END_LINE +
+                                'M=M+1' + END_LINE)
 
         elif command == Command.C_POP and segment != 'constant':
             if segment in MEMORY:
@@ -155,21 +154,26 @@ class CodeWriter:
         :param index: the index in the memory segment.
         :return: the memory (variable or number) according to the given segment and index.
         """
+        # adds the segment address to the index and go to there
         if segment in MEMORY:
             return (MEMORY[segment] + END_LINE +
                     'D=M' + END_LINE +
                     '@' + str(index) + END_LINE +
                     'A=D+A')
-
+        # returns the index, usually in this case - segment 0
         elif segment == 'base':
             return index
-
+        # if the index>0 return it otherwise return -index and than make the number negative
+        # by A=-A
         elif segment == 'constant':
-            return str(index)
+            return (str(-index) + END_LINE + 'A=-A') if index < 0 else str(index)
+        # return file_input.index
         elif segment == 'static':
-            return self.vm_file + "." + str(index)  # should be with point
+            return self.vm_file + "." + str(index)
+        # in the temp segment that starts at place 5 in the memory, so 5 added to the given index
         elif segment == 'temp':
             return str(TEMP_MEM + index)
+        # when the segment=pointer, if 1 returns 'that' else returns 'false'
         else:
             if index:
                 return 'THAT'
